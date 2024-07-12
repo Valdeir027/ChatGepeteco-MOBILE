@@ -61,7 +61,7 @@ class _HomePageState extends State<HomePage> {
           if (roomState.isLoading.value) {
             return const Center(child: CircularProgressIndicator(color: Color.fromARGB(255, 48, 32, 27),));
           }
-          if (roomState.state.value.isNotEmpty) {
+          if (roomState.state.value.isEmpty) {
             return const Center(
               child: Text(
                 "Nenhum item encontrado",
