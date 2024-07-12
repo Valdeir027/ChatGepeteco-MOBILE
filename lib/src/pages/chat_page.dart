@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:chatgepeteco/src/pages/models/userModel.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -17,6 +18,7 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final List<Map<dynamic, dynamic>> messageList = [];
   late String user_token = user.access ?? '';
+  final ScrollController _scrollController = ScrollController();
   @override
   void initState() {
     user_token = user.access ?? '';
@@ -59,6 +61,13 @@ class _ChatPageState extends State<ChatPage> {
                   var json = jsonDecode(snapshot.data);
                   messageList.add(json);
                   print(json);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollController.animateTo(
+                      _scrollController.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                    );
+                  });
                 }
 
                 return getMessageList();
@@ -111,7 +120,7 @@ class _ChatPageState extends State<ChatPage> {
 
   ListView getMessageList() {
     List<Widget> listWidget = [];
-// {type: chat, message_data: {message: ts, user: 11, username: valdeir, timestamp: 2024-07-08 00:52:54}, user_token: }
+    // {type: chat, message_data: {message: ts, user: 11, username: valdeir, timestamp: 2024-07-08 00:52:54}, user_token: }
     for (Map message_json in messageList) {
       if (message_json["message_data"]["user"] == user.id) {
         listWidget.add(MessageBubble(
@@ -125,12 +134,16 @@ class _ChatPageState extends State<ChatPage> {
       }
     }
 
-    return ListView(children: listWidget);
+    return ListView(
+      controller: _scrollController,
+      children: listWidget,
+    );
   }
 
   @override
   void dispose() {
     channel.sink.close();
+    _scrollController.dispose();
     super.dispose();
   }
 }
