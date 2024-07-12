@@ -5,23 +5,26 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  final int chatId;
+  const ChatPage({Key? key, required this.chatId}) : super(key: key);
+
 
   @override
   _ChatPageState createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final User user = User();
-  final channel = WebSocketChannel.connect(Uri.parse(
-      'ws://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/ws/socket-server/1/'));
+  final User user = User(); 
+  late WebSocketChannel channel;
   final TextEditingController _messageController = TextEditingController();
   final List<Map<dynamic, dynamic>> messageList = [];
   late String user_token = user.access ?? '';
   final ScrollController _scrollController = ScrollController();
+  
   @override
   void initState() {
     user_token = user.access ?? '';
+    channel = WebSocketChannel.connect(Uri.parse('ws://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/ws/socket-server/${widget.chatId}/'));
     super.initState();
   }
 
@@ -41,18 +44,21 @@ class _ChatPageState extends State<ChatPage> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.menu_sharp),
-            onPressed: () {
-              Navigator.of(context).pushReplacementNamed("/home");
+          PopupMenuButton(
+            itemBuilder:(context) =>[
+              PopupMenuItem(
+                child: Text("logout"),
+                value: "/login",)
+            ],
+            onSelected:(value) {
+              Navigator.of(context).pushReplacementNamed(value);
             },
-          ),
+          )
         ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(user.username ?? ''),
           Expanded(
             child: StreamBuilder(
               stream: channel.stream,
@@ -124,12 +130,14 @@ class _ChatPageState extends State<ChatPage> {
     for (Map message_json in messageList) {
       if (message_json["message_data"]["user"] == user.id) {
         listWidget.add(MessageBubble(
+
             message:
                 message_json["message_data"]["message"],
             isSentByMe: true));
       } else {
         listWidget.add(MessageBubble(
-            message: "${message_json["message_data"]["username"]}: ${message_json["message_data"]["message"]}",
+            username: message_json["message_data"]["username"],
+            message: message_json["message_data"]["message"],
             isSentByMe: false));
       }
     }
@@ -150,12 +158,14 @@ class _ChatPageState extends State<ChatPage> {
 
 class MessageBubble extends StatelessWidget {
   final String message;
+  final String? username;
   final bool isSentByMe;
 
   const MessageBubble({
     super.key,
     required this.message,
     required this.isSentByMe,
+    this.username,
   });
 
   @override
@@ -174,12 +184,25 @@ class MessageBubble extends StatelessWidget {
       ),
       child: Align(
         alignment: isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-        child: Text(
-          message,
-          style: TextStyle(
-            color: isSentByMe ? Colors.white : Colors.black,
-          ),
-          softWrap: true, // Permite quebra de linha
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (username != null && username!.isNotEmpty)
+              Text(
+                username!,
+                style: TextStyle(
+                  color: isSentByMe ? Colors.white54 : Colors.black54,
+                ),
+                softWrap: true, // Permite quebra de linha
+              ),
+            Text(
+              message,
+              style: TextStyle(
+                color: isSentByMe ? Colors.white : Colors.black,
+              ),
+              softWrap: true, // Permite quebra de linha
+            ),
+          ],
         ),
       ),
     );

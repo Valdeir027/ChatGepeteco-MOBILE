@@ -27,12 +27,11 @@ class MainApp extends StatelessWidget {
         primarySwatch: Colors.blue
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: "/chat",
+      initialRoute: "/login",
       routes: {
         '/login':(context) => LoginPage(),
         '/register':(context) => RegisterPage(),
         '/home': (context) => HomePage(),
-        '/chat':(context) => ChatPage(),
       },
     ); 
   }
