@@ -1,11 +1,10 @@
-import 'dart:convert';
+
 
 import 'package:chatgepeteco/src/pages/chat_page.dart';
 import 'package:chatgepeteco/src/pages/models/repositorys/room_repository.dart';
 import 'package:chatgepeteco/src/pages/models/userModel.dart';
 import 'package:chatgepeteco/src/store/room_store.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -62,7 +61,7 @@ class _HomePageState extends State<HomePage> {
           if (roomState.isLoading.value) {
             return const Center(child: CircularProgressIndicator(color: Color.fromARGB(255, 48, 32, 27),));
           }
-          if (roomState.state.value == null) {
+          if (roomState.state.value.isNotEmpty) {
             return const Center(
               child: Text(
                 "Nenhum item encontrado",

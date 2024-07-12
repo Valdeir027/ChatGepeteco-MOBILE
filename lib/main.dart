@@ -1,4 +1,4 @@
-import 'package:chatgepeteco/src/pages/chat_page.dart';
+
 import 'package:chatgepeteco/src/pages/home.dart';
 import 'package:chatgepeteco/src/pages/login_page.dart';
 import 'package:chatgepeteco/src/pages/register_page.dart';
