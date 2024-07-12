@@ -1,3 +1,4 @@
+import 'package:chatgepeteco/src/pages/models/userModel.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -8,30 +9,38 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  User anotherUserInstance = User();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(children: [
-          Icon(Icons.chat_bubble),
-          Container(
-            width: 5,
-          ),
-          Text("Chat", style: TextStyle(
-            color: Colors.blue
-          ),),
-          Text("Gepeteco"),
-        ],),
+        title: Row(
+          children: [
+            const Icon(Icons.chat_bubble),
+            Container(
+              width: 5,
+            ),
+            const Text(
+              "Chat",
+              style: TextStyle(color: Colors.blue),
+            ),
+            const Text("Gepeteco"),
+          ],
+        ),
         actions: [
-          IconButton(icon: Icon(Icons.menu_sharp),onPressed: (){
-            Navigator.of(context).pushReplacementNamed("/chat");
-          },)
+          IconButton(
+            icon: const Icon(Icons.menu_sharp),
+            onPressed: () {
+              print("Clicou no menu");
+            },
+          )
         ],
       ),
       body: Container(
         child: Center(
-              child: Text("HomePage"),
-            ),
+          child: Text(anotherUserInstance.username ?? 'No user data'),
+        ),
       ),
     );
   }
