@@ -1,30 +1,31 @@
 import 'dart:convert';
 
+import 'package:chatgepeteco/src/pages/models/roomModel.dart';
 import 'package:chatgepeteco/src/pages/models/userModel.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ChatPage extends StatefulWidget {
-  final int chatId;
-  const ChatPage({Key? key, required this.chatId}) : super(key: key);
-
+  final Room room;
+  const ChatPage({Key? key, required this.room}) : super(key: key);
 
   @override
   _ChatPageState createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final User user = User(); 
+  final User user = User();
   late WebSocketChannel channel;
   final TextEditingController _messageController = TextEditingController();
   final List<Map<dynamic, dynamic>> messageList = [];
   late String user_token = user.access ?? '';
   final ScrollController _scrollController = ScrollController();
-  
+
   @override
   void initState() {
     user_token = user.access ?? '';
-    channel = WebSocketChannel.connect(Uri.parse('ws://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/ws/socket-server/${widget.chatId}/'));
+    channel = WebSocketChannel.connect(Uri.parse(
+        'ws://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/ws/socket-server/${widget.room.id}/'));
     super.initState();
   }
 
@@ -32,29 +33,10 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
-          children: [
-            Icon(Icons.chat),
-            SizedBox(width: 5),
-            Text(
-              "Chat",
-              style: TextStyle(color: Colors.blue),
-            ),
-            Text("Gepeteco")
-          ],
-        ),
-        actions: [
-          PopupMenuButton(
-            itemBuilder:(context) =>[
-              PopupMenuItem(
-                child: Text("logout"),
-                value: "/login",)
-            ],
-            onSelected:(value) {
-              Navigator.of(context).pushReplacementNamed(value);
-            },
-          )
-        ],
+        title: widget.room.nome != null
+            ? Text(widget.room.nome!)
+            : const Text('Chat'),
+        centerTitle: true,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -130,9 +112,7 @@ class _ChatPageState extends State<ChatPage> {
     for (Map message_json in messageList) {
       if (message_json["message_data"]["user"] == user.id) {
         listWidget.add(MessageBubble(
-
-            message:
-                message_json["message_data"]["message"],
+            message: message_json["message_data"]["message"],
             isSentByMe: true));
       } else {
         listWidget.add(MessageBubble(

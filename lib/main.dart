@@ -24,7 +24,11 @@ class MainApp extends StatelessWidget {
           ),
         ),
         
-        primarySwatch: Colors.blue
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        // dinamizar thema
+        // brightness: Brightness.dark,
+        ),
       ),
       debugShowCheckedModeBanner: false,
       initialRoute: "/login",
