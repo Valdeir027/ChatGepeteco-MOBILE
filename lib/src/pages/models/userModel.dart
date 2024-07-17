@@ -38,12 +38,12 @@ class User {
 
   // Method to convert User instance to JSON
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['username'] = this.username;
-    data['email'] = this.email;
-    data['refresh'] = this.refresh;
-    data['access'] = this.access;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['username'] = username;
+    data['email'] = email;
+    data['refresh'] = refresh;
+    data['access'] = access;
     return data;
   }
 }

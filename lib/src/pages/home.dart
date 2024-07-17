@@ -1,6 +1,4 @@
-import 'dart:ffi';
 
-import 'package:chatgepeteco/src/controlers/themecontrol.dart';
 import 'package:chatgepeteco/src/pages/chat_page.dart';
 import 'package:chatgepeteco/src/pages/models/repositorys/room_repository.dart';
 import 'package:chatgepeteco/src/pages/models/userModel.dart';
@@ -48,9 +46,9 @@ class _HomePageState extends State<HomePage> {
         actions: [
           PopupMenuButton(
             itemBuilder: (context) => [
-              PopupMenuItem(
-                child: Text("logout"),
+              const PopupMenuItem(
                 value: "/login",
+                child: Text("logout"),
               )
             ],
             onSelected: (value) {
@@ -116,13 +114,13 @@ class _HomePageState extends State<HomePage> {
                         children: <Widget>[
                           Text(
                             title,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 16.0, fontWeight: FontWeight.bold),
                           ),
-                          SizedBox(height: 8.0),
+                          const SizedBox(height: 8.0),
                           Text(
                             "${item.id ?? ''}",
-                            style: TextStyle(fontSize: 10.0),
+                            style: const TextStyle(fontSize: 10.0),
                           ),
                         ],
                       ),
@@ -135,7 +133,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
         onPressed: () {
           _showAddRoomDialog(context);
         },
@@ -145,18 +143,18 @@ class _HomePageState extends State<HomePage> {
 }
 
 Future<void> _showAddRoomDialog(BuildContext context) async {
-  final TextEditingController _textController = TextEditingController();
+  final TextEditingController textController = TextEditingController();
   return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Adiconar Sala"),
+          title: const Text("Adiconar Sala"),
           content: SingleChildScrollView(
             child: Column(
               children: [
                 TextField(
-                  controller: _textController,
-                  decoration: InputDecoration(
+                  controller: textController,
+                  decoration: const InputDecoration(
                     labelText: "Nome da sala",
                   ),
                 ),
@@ -165,20 +163,20 @@ Future<void> _showAddRoomDialog(BuildContext context) async {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Fechar'),
+              child: const Text('Fechar'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Criar'),
+              child: const Text('Criar'),
               onPressed: () {
                 var url = Uri.parse(
                     "http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/rooms/");
                 http.post(url, body: {
-                  'nome': _textController.text,
+                  'nome': textController.text,
                 });
-                print(_textController);
+                print(textController);
                 Navigator.of(context).pop();
                 Navigator.of(context).pushReplacementNamed("/home");
               },

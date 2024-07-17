@@ -102,8 +102,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           print('Response status: ${response.statusCode}');
 
                           print('Response body: ${response.body}');
-                          var response_json = jsonDecode(response.body);
-                          User user = User.fromJson(response_json);
+                          var responseJson = jsonDecode(response.body);
+                          User user = User.fromJson(responseJson);
                           Navigator.of(context).pushReplacementNamed("/chat");
                           print(user.username);
                           _username.text = '';

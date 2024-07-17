@@ -7,7 +7,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ChatPage extends StatefulWidget {
   final Room room;
-  const ChatPage({Key? key, required this.room}) : super(key: key);
+  const ChatPage({super.key, required this.room});
 
   @override
   _ChatPageState createState() => _ChatPageState();
