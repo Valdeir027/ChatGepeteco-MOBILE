@@ -1,6 +1,7 @@
 
 import 'package:chatgepeteco/src/pages/chat_page.dart';
 import 'package:chatgepeteco/src/pages/models/repositorys/room_repository.dart';
+import 'package:chatgepeteco/src/pages/models/roomModel.dart';
 import 'package:chatgepeteco/src/pages/models/userModel.dart';
 import 'package:chatgepeteco/src/store/room_store.dart';
 import 'package:flutter/material.dart';
@@ -87,7 +88,12 @@ class _HomePageState extends State<HomePage> {
               separatorBuilder: (context, child) => const SizedBox(
                 height: 32,
               ),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.only(
+                bottom: 80,
+                left: 16,
+                right: 16,
+
+              ),
               itemCount: roomState.state.value.length,
               itemBuilder: (_, index) {
                 final item = roomState.state.value[index];
@@ -110,18 +116,33 @@ class _HomePageState extends State<HomePage> {
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Text(
-                            title,
-                            style: const TextStyle(
-                                fontSize: 16.0, fontWeight: FontWeight.bold),
+                          Row(
+                            children: [
+                               Expanded(
+                                 child: Text(
+                                    title,
+                                    softWrap: true,
+                                    style: const TextStyle(
+                                        fontSize: 16.0, fontWeight: FontWeight.bold),
+                                  ),
+                               ),
+                               IconButton(icon: Icon(Icons.edit), onPressed: (){
+                                _showUpdateRoomDialog(context, item);
+                               },)
+                            ],
                           ),
-                          const SizedBox(height: 8.0),
-                          Text(
-                            "${item.id ?? ''}",
-                            style: const TextStyle(fontSize: 10.0),
-                          ),
+                          const SizedBox(height: 8.0), 
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: IconButton(icon: Icon(Icons.delete),
+                            onPressed: () {
+                                _showDeleteRoomDialog(context, item);
+                            }
+                            )
+                          )
                         ],
                       ),
                     ),
@@ -140,6 +161,50 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
+
+Future<void> _showDeleteRoomDialog(BuildContext context, Room room,) async {
+  
+  return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Deletando Sala"),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                Text("Você tem certeza que quer deletar esta sala?"),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Fechar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Deletar', style: TextStyle(
+                color: Colors.red
+              ),),
+              onPressed: () async {
+                var url = Uri.parse(
+                    "http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/rooms/${room.id}/");
+
+                var response = await http.delete(url);
+                print(response.statusCode);
+                if (response.statusCode ==204){
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushReplacementNamed("/home");
+                }else {
+                  print(response);
+                }
+              },
+            )
+          ],
+        );
+      });
 }
 
 Future<void> _showAddRoomDialog(BuildContext context) async {
@@ -170,15 +235,65 @@ Future<void> _showAddRoomDialog(BuildContext context) async {
             ),
             TextButton(
               child: const Text('Criar'),
-              onPressed: () {
+              onPressed: () async {
                 var url = Uri.parse(
                     "http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/rooms/");
-                http.post(url, body: {
+                var response = await http.post(url, body: {
                   'nome': textController.text,
                 });
-                print(textController);
+                print(response.statusCode);
+                if (response.statusCode ==201) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushReplacementNamed("/home");
+
+                }
+              },
+            )
+          ],
+        );
+      });
+}
+
+Future<void> _showUpdateRoomDialog(BuildContext context, Room room) async {
+  final TextEditingController textController = TextEditingController();
+  return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Editar da Sala"),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: textController,
+                  decoration: const InputDecoration(
+                    labelText: "nome da sala",
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Fechar'),
+              onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).pushReplacementNamed("/home");
+              },
+            ),
+            TextButton(
+              child: const Text('Editar'),
+              onPressed: () async {
+                var url = Uri.parse(
+                    "http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/rooms/${room.id}/");
+                var response = await http.patch(url, body: {
+                  'nome': textController.text,
+                });
+                print(response.statusCode);
+                if (response.statusCode ==200) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushReplacementNamed("/home");
+
+                }
               },
             )
           ],
