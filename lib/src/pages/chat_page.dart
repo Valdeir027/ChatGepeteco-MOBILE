@@ -4,6 +4,7 @@ import 'package:chatgepeteco/src/pages/models/roomModel.dart';
 import 'package:chatgepeteco/src/pages/models/userModel.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:http/http.dart' as http;
 
 class ChatPage extends StatefulWidget {
   final Room room;
@@ -17,7 +18,7 @@ class _ChatPageState extends State<ChatPage> {
   final User user = User();
   late WebSocketChannel channel;
   final TextEditingController _messageController = TextEditingController();
-  final List<Map<dynamic, dynamic>> messageList = [];
+  final List<MessageBubble> messageList = [];
   late String user_token = user.access ?? '';
   final ScrollController _scrollController = ScrollController();
 
@@ -26,6 +27,7 @@ class _ChatPageState extends State<ChatPage> {
     user_token = user.access ?? '';
     channel = WebSocketChannel.connect(Uri.parse(
         'ws://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/ws/socket-server/${widget.room.id}/'));
+    getMessages();
     super.initState();
   }
 
@@ -47,7 +49,16 @@ class _ChatPageState extends State<ChatPage> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   var json = jsonDecode(snapshot.data);
-                  messageList.add(json);
+                  if (json["message_data"]["user"] == user.id) {
+                    messageList.add(MessageBubble(
+                        message: json["message_data"]["message"],
+                        isSentByMe: true));
+                  } else {
+                    messageList.add(MessageBubble(
+                        username: json["message_data"]["username"],
+                        message: json["message_data"]["message"],
+                        isSentByMe: false));
+                  }
                   print(json);
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     _scrollController.animateTo(
@@ -57,8 +68,9 @@ class _ChatPageState extends State<ChatPage> {
                     );
                   });
                 }
-
+                
                 return getMessageList();
+                
               },
             ),
           ),
@@ -107,25 +119,44 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   ListView getMessageList() {
+
     List<Widget> listWidget = [];
-    // {type: chat, message_data: {message: ts, user: 11, username: valdeir, timestamp: 2024-07-08 00:52:54}, user_token: }
-    for (Map message_json in messageList) {
-      if (message_json["message_data"]["user"] == user.id) {
-        listWidget.add(MessageBubble(
-            message: message_json["message_data"]["message"],
-            isSentByMe: true));
-      } else {
-        listWidget.add(MessageBubble(
-            username: message_json["message_data"]["username"],
-            message: message_json["message_data"]["message"],
-            isSentByMe: false));
-      }
+    for ( MessageBubble message in messageList) {
+      listWidget.add(message);
     }
 
     return ListView(
       controller: _scrollController,
       children: listWidget,
     );
+  }
+  Future<void> getMessages() async {
+    var url = Uri.parse("http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/messages/by_room/?room_id=${widget.room.id!}");
+    var response = await http.get(url);
+    var responseBody = utf8.decode(response.bodyBytes);
+    var data = jsonDecode(responseBody);
+    setState(() {
+      for (Map message in data){
+        if (message["user"] == user.id) {
+          messageList.add(MessageBubble(
+              message: message["mensagem"],
+              isSentByMe: true));
+        } else {
+          messageList.add(MessageBubble(
+              username: message["user_name"],
+              message: message["mensagem"],
+              isSentByMe: false));
+        }
+         WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollController.animateTo(
+                      _scrollController.position.maxScrollExtent + 50,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                    );
+                  });
+      }
+    
+    });
   }
 
   @override
