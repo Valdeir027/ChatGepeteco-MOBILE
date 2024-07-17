@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:chatgepeteco/src/constants.dart';
+import 'package:chatgepeteco/src/controlers/themecontrol.dart';
 import 'package:chatgepeteco/src/pages/models/userModel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
@@ -13,7 +16,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final url = Uri.parse(
-      "http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/token/");
+      "${Constants.BASEURL}/api/token/");
 
   // Crie controladores de texto para cada TextField
   final TextEditingController _username = TextEditingController();
@@ -34,9 +37,11 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.chat,
-              size: 40,
+            SvgPicture.string(
+              Constants.svgIconChatString,
+              colorFilter: ThemeControl.instance.isDarkTheme? const ColorFilter.mode(Colors.white70, BlendMode.srcIn) :const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+              width: 50,
+              height: 50,
             ),
             Container(
               child: Row(
@@ -94,13 +99,30 @@ class _LoginPageState extends State<LoginPage> {
                             'username': _username.text,
                             'password': _password.text
                           });
-                          var json = jsonDecode(response.body);
-                          User user = User.fromJson(json);
-                          print(user);
-                          Navigator.of(context).pushReplacementNamed("/home");
 
+                          var json = jsonDecode(response.body);
+                          if (response.statusCode == 200){
+                            User user = User.fromJson(json);
+                            print(user);
+                            Navigator.of(context).pushReplacementNamed("/home");
+                            _username.text = '';
+                          _password.text = '';  
+                          }else {
+                          showDialog(context: context, builder: (child){
+                            return AlertDialog(
+                              title: Text("Error!!",style: TextStyle(color: Colors.red[100]),),
+                              content: Text("Não foi possivel efetuar o login."),
+                              actions: [
+                                TextButton(onPressed: (){
+                                  Navigator.of(context).pop();
+                                }, child: Text("tentar novamente"))
+                              ],
+                            );
+                          });
                           _username.text = '';
                           _password.text = '';
+                          }
+
                         }
                       }),
                   Container(

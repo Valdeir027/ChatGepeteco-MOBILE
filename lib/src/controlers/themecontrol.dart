@@ -1,12 +1,26 @@
-class IsdarkTheme {
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-  static final IsdarkTheme _instance = IsdarkTheme._internal();
-  IsdarkTheme._internal();
-  factory IsdarkTheme() {
-    return _instance;
+class ThemeControl extends ChangeNotifier {
+  static ThemeControl instance = ThemeControl();
+
+  bool isDarkTheme = false;
+
+  ThemeControl() {
+    _loadTheme();
   }
-  static bool isDark = false;
-  static void toggleTheme() {
-    isDark = !isDark;
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    isDarkTheme = prefs.getBool('isDarkTheme') ?? false;
+    notifyListeners();
+  }
+
+  Future<void> changeTheme() async {
+    isDarkTheme = !isDarkTheme;
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDarkTheme', isDarkTheme);
   }
 }

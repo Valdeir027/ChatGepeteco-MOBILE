@@ -1,10 +1,13 @@
 
+import 'package:chatgepeteco/src/constants.dart';
+import 'package:chatgepeteco/src/controlers/themecontrol.dart';
 import 'package:chatgepeteco/src/pages/chat_page.dart';
 import 'package:chatgepeteco/src/pages/models/repositorys/room_repository.dart';
 import 'package:chatgepeteco/src/pages/models/roomModel.dart';
 import 'package:chatgepeteco/src/pages/models/userModel.dart';
 import 'package:chatgepeteco/src/store/room_store.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
@@ -27,33 +30,92 @@ class _HomePageState extends State<HomePage> {
     roomState.getRoom();
   }
 
+  Future<void> _refreshRoom() async{
+      roomState.state.value.clear();
+      roomState.getRoom();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            const Icon(Icons.chat),
-            Container(
-              width: 5,
-            ),
-            const Text(
-              "Chat",
-              style: TextStyle(color: Colors.blue),
-            ),
-            const Text("Gepeteco"),
-          ],
+        
+        title: GestureDetector(
+          onTap: (){
+            setState(() {
+              _refreshRoom();
+            });
+          },
+          child: Row(
+            children: [
+              SvgPicture.string(
+                Constants.svgIconChatString,
+                colorFilter: ThemeControl.instance.isDarkTheme? const ColorFilter.mode(Colors.white70, BlendMode.srcIn) :const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                width: 30,
+                height: 30,
+              ),
+              Container(
+                width: 5,
+              ),
+              const Text(
+                "Chat",
+                style: TextStyle(color: Colors.blue),
+              ),
+              const Text("Gepeteco"),
+            ],
+          ),
         ),
         actions: [
           PopupMenuButton(
+            
+            popUpAnimationStyle:AnimationStyle(
+              curve: Curves.easeIn,
+              duration: const Duration(milliseconds: 500)
+            ),
             itemBuilder: (context) => [
+              if(ThemeControl.instance.isDarkTheme)
+                const PopupMenuItem(
+                  value: 1,
+                  child: Row(
+
+                      children: [
+                      Text("Modo claro"),
+                      Icon(Icons.light_mode),
+                    ],),
+                ),
+              if(ThemeControl.instance.isDarkTheme == false)
+                const PopupMenuItem(
+                    value: 1,
+                    child: Row(
+
+                        children: [
+                        Text("Modo escuro"),
+                        Icon(Icons.dark_mode),
+                      ],),
+                  ),
+              
               const PopupMenuItem(
                 value: "/login",
-                child: Text("logout"),
+                child: Row(
+                  children: [
+                    Text("Modo escuro"),
+                    Icon(Icons.exit_to_app),
+                  ],
+                ),
               )
             ],
             onSelected: (value) {
-              Navigator.of(context).pushReplacementNamed(value);
+              if (value is String) {
+
+                Navigator.of(context).pushReplacementNamed(value);
+              }
+              if(value is int){
+                switch (value) {
+                  case 1:
+                   setState(() {
+                    ThemeControl.instance.changeTheme();    
+                   });
+                }
+              }
             },
           )
         ],
@@ -84,71 +146,74 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           } else {
-            return ListView.separated(
-              separatorBuilder: (context, child) => const SizedBox(
-                height: 32,
-              ),
-              padding: const EdgeInsets.only(
-                bottom: 80,
-                left: 16,
-                right: 16,
-
-              ),
-              itemCount: roomState.state.value.length,
-              itemBuilder: (_, index) {
-                final item = roomState.state.value[index];
-                var title = item.nome ?? '';
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ChatPage(
-                                room: item,
-                              )),
-                    );
-                  },
-                  child: Card(
-                    elevation: 4.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Row(
-                            children: [
-                               Expanded(
-                                 child: Text(
-                                    title,
-                                    softWrap: true,
-                                    style: const TextStyle(
-                                        fontSize: 16.0, fontWeight: FontWeight.bold),
-                                  ),
-                               ),
-                               IconButton(icon: Icon(Icons.edit), onPressed: (){
-                                _showUpdateRoomDialog(context, item);
-                               },)
-                            ],
-                          ),
-                          const SizedBox(height: 8.0), 
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: IconButton(icon: Icon(Icons.delete),
-                            onPressed: () {
-                                _showDeleteRoomDialog(context, item);
-                            }
+            return RefreshIndicator(
+              onRefresh: _refreshRoom,
+              child: ListView.separated(
+                separatorBuilder: (context, child) => const SizedBox(
+                  height: 32,
+                ),
+                padding: const EdgeInsets.only(
+                  bottom: 80,
+                  left: 16,
+                  right: 16,
+              
+                ),
+                itemCount: roomState.state.value.length,
+                itemBuilder: (_, index) {
+                  final item = roomState.state.value[index];
+                  var title = item.nome ?? '';
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ChatPage(
+                                  room: item,
+                                )),
+                      );
+                    },
+                    child: Card(
+                      elevation: 4.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Row(
+                              children: [
+                                 Expanded(
+                                   child: Text(
+                                      title,
+                                      softWrap: true,
+                                      style: const TextStyle(
+                                          fontSize: 16.0, fontWeight: FontWeight.bold),
+                                    ),
+                                 ),
+                                 IconButton(icon: const Icon(Icons.edit), onPressed: (){
+                                  _showUpdateRoomDialog(context, item, roomState);
+                                 },)
+                              ],
+                            ),
+                            const SizedBox(height: 8.0), 
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                  _showDeleteRoomDialog(context, item, roomState);
+                              }
+                              )
                             )
-                          )
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             );
           }
         },
@@ -156,21 +221,21 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
-          _showAddRoomDialog(context);
+          _showAddRoomDialog(context, roomState);
         },
       ),
     );
   }
 }
 
-Future<void> _showDeleteRoomDialog(BuildContext context, Room room,) async {
+Future<void> _showDeleteRoomDialog(BuildContext context, Room room,  RoomState state) async {
   
   return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Deletando Sala"),
-          content: SingleChildScrollView(
+          content: const SingleChildScrollView(
             child: Column(
               children: [
                 Text("Você tem certeza que quer deletar esta sala?"),
@@ -190,13 +255,14 @@ Future<void> _showDeleteRoomDialog(BuildContext context, Room room,) async {
               ),),
               onPressed: () async {
                 var url = Uri.parse(
-                    "http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/rooms/${room.id}/");
+                    "${Constants.BASEURL}/api/rooms/${room.id}/");
 
                 var response = await http.delete(url);
                 print(response.statusCode);
                 if (response.statusCode ==204){
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pushReplacementNamed("/home");
+                Navigator.of(context).pop();
+                  state.state.value.clear();
+                  state.getRoom();
                 }else {
                   print(response);
                 }
@@ -207,7 +273,7 @@ Future<void> _showDeleteRoomDialog(BuildContext context, Room room,) async {
       });
 }
 
-Future<void> _showAddRoomDialog(BuildContext context) async {
+Future<void> _showAddRoomDialog(BuildContext context, RoomState state) async {
   final TextEditingController textController = TextEditingController();
   return showDialog(
       context: context,
@@ -237,14 +303,15 @@ Future<void> _showAddRoomDialog(BuildContext context) async {
               child: const Text('Criar'),
               onPressed: () async {
                 var url = Uri.parse(
-                    "http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/rooms/");
+                    "${Constants.BASEURL}/api/rooms/");
                 var response = await http.post(url, body: {
                   'nome': textController.text,
                 });
                 print(response.statusCode);
                 if (response.statusCode ==201) {
                   Navigator.of(context).pop();
-                  Navigator.of(context).pushReplacementNamed("/home");
+                  state.state.value.clear();
+                  state.getRoom();
 
                 }
               },
@@ -254,7 +321,7 @@ Future<void> _showAddRoomDialog(BuildContext context) async {
       });
 }
 
-Future<void> _showUpdateRoomDialog(BuildContext context, Room room) async {
+Future<void> _showUpdateRoomDialog(BuildContext context, Room room, RoomState state) async {
   final TextEditingController textController = TextEditingController();
   return showDialog(
       context: context,
@@ -284,15 +351,15 @@ Future<void> _showUpdateRoomDialog(BuildContext context, Room room) async {
               child: const Text('Editar'),
               onPressed: () async {
                 var url = Uri.parse(
-                    "http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/rooms/${room.id}/");
+                    "${Constants.BASEURL}/api/rooms/${room.id}/");
                 var response = await http.patch(url, body: {
                   'nome': textController.text,
                 });
                 print(response.statusCode);
                 if (response.statusCode ==200) {
                   Navigator.of(context).pop();
-                  Navigator.of(context).pushReplacementNamed("/home");
-
+                  state.state.value.clear();
+                  state.getRoom();
                 }
               },
             )

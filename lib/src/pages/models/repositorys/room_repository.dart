@@ -1,11 +1,12 @@
 import 'dart:convert';
 
+import 'package:chatgepeteco/src/constants.dart';
 import 'package:chatgepeteco/src/pages/models/roomModel.dart';
 import 'package:http/http.dart' as http;
 
 
 class RoomRepository {
-  final url =  Uri.parse("http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/rooms/");
+  final url =  Uri.parse("${Constants.BASEURL}/api/rooms/");
   final List<Room> list= [];
 
   Future fechRoom() async{

@@ -1,8 +1,11 @@
 import 'dart:convert';
 
+import 'package:chatgepeteco/src/constants.dart';
+import 'package:chatgepeteco/src/controlers/themecontrol.dart';
 import 'package:chatgepeteco/src/pages/models/userModel.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_svg/flutter_svg.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -13,24 +16,24 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final url = Uri.parse(
-      "http://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/api/register/");
+      "${Constants.BASEURL}/register/");
 
   // Crie controladores de texto para cada TextField
   final TextEditingController _username = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _email = TextEditingController();
-  String json = "pra eu ver";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SingleChildScrollView(
-      child: Container(
+        body: Container(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.chat,
-              size: 40,
+            SvgPicture.string(
+              Constants.svgIconChatString,
+              colorFilter: ThemeControl.instance.isDarkTheme? const ColorFilter.mode(Colors.white70, BlendMode.srcIn) :const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+              width: 50,
+              height: 50,
             ),
             Container(
               child: Row(
@@ -50,7 +53,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 ],
               ),
             ),
-            Text(json),
             Container(
               height: 10,
             ),
@@ -99,16 +101,28 @@ class _RegisterPageState extends State<RegisterPage> {
                             'email': _email.text,
                             'password': _password.text
                           });
-                          print('Response status: ${response.statusCode}');
-
-                          print('Response body: ${response.body}');
-                          var responseJson = jsonDecode(response.body);
-                          User user = User.fromJson(responseJson);
-                          Navigator.of(context).pushReplacementNamed("/chat");
-                          print(user.username);
+                          var json = jsonDecode(response.body);
+                          if (response.statusCode == 200){
+                            User user = User.fromJson(json);
+                            print(user);
+                            Navigator.of(context).pushReplacementNamed("/home");
+                            _username.text = '';
+                          _password.text = '';  
+                          }else {
+                          showDialog(context: context, builder: (child){
+                            return AlertDialog(
+                              title: Text("Error!!",style: TextStyle(color: Colors.red[100]),),
+                              content: Text("Não foi possivel cadastrar usuario."),
+                              actions: [
+                                TextButton(onPressed: (){
+                                  Navigator.of(context).pop();
+                                }, child: Text("tentar novamente"))
+                              ],
+                            );
+                          });
                           _username.text = '';
-                          _email.text = '';
                           _password.text = '';
+                          }
                         }
                       }),
                   Container(
@@ -128,6 +142,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ],
         ),
       ),
-    ));
+    );
   }
 }

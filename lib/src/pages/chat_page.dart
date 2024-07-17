@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:chatgepeteco/src/constants.dart';
+import 'package:chatgepeteco/src/controlers/themecontrol.dart';
 import 'package:chatgepeteco/src/pages/models/roomModel.dart';
 import 'package:chatgepeteco/src/pages/models/userModel.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +28,7 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     user_token = user.access ?? '';
     channel = WebSocketChannel.connect(Uri.parse(
-        'ws://ec2-18-228-44-147.sa-east-1.compute.amazonaws.com/ws/socket-server/${widget.room.id}/'));
+        '${Constants.WSBASEURL}/ws/socket-server/${widget.room.id}/'));
     getMessages();
     super.initState();
   }
@@ -186,7 +188,7 @@ class MessageBubble extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isSentByMe ? Colors.blue : Colors.grey[300],
+        color: isSentByMe ? ThemeControl.instance.isDarkTheme?  Colors.blue[800]: Colors.blue : ThemeControl.instance.isDarkTheme?  const Color.fromARGB(255, 42, 45, 65):Colors.grey[300],
         borderRadius: BorderRadius.circular(12),
       ),
       constraints: BoxConstraints(
@@ -202,14 +204,14 @@ class MessageBubble extends StatelessWidget {
               Text(
                 username!,
                 style: TextStyle(
-                  color: isSentByMe ? Colors.white54 : Colors.black54,
+                  color: ThemeControl.instance.isDarkTheme?  Colors.white54: Colors.black54,
                 ),
                 softWrap: true, // Permite quebra de linha
               ),
             Text(
               message,
               style: TextStyle(
-                color: isSentByMe ? Colors.white : Colors.black,
+                color: isSentByMe ? Colors.white : ThemeControl.instance.isDarkTheme?  Colors.white: Colors.black,
               ),
               softWrap: true, // Permite quebra de linha
             ),
