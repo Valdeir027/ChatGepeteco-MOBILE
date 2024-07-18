@@ -18,6 +18,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
+      
       animation: ThemeControl.instance,
        builder: (context,child) {
           return MaterialApp(

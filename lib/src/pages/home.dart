@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
 
                       children: [
-                      Text("Modo claro"),
+                      Expanded(child: Text("Modo claro ")),
                       Icon(Icons.light_mode),
                     ],),
                 ),
@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
                     child: Row(
 
                         children: [
-                        Text("Modo escuro"),
+                        Expanded(child: Text("Modo escuro ")),
                         Icon(Icons.dark_mode),
                       ],),
                   ),
@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
                 value: "/login",
                 child: Row(
                   children: [
-                    Text("Modo escuro"),
+                    Expanded(child: Text("Logout")),
                     Icon(Icons.exit_to_app),
                   ],
                 ),

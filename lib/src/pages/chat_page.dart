@@ -23,7 +23,6 @@ class _ChatPageState extends State<ChatPage> {
   final List<MessageBubble> messageList = [];
   late String user_token = user.access ?? '';
   final ScrollController _scrollController = ScrollController();
-
   @override
   void initState() {
     user_token = user.access ?? '';
@@ -32,6 +31,13 @@ class _ChatPageState extends State<ChatPage> {
     getMessages();
     super.initState();
   }
+  @override
+  void dispose() {
+    channel.sink.close();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -76,44 +82,59 @@ class _ChatPageState extends State<ChatPage> {
               },
             ),
           ),
-          BottomAppBar(
+          Container(
+            constraints: BoxConstraints(maxHeight: 150),
+            margin: EdgeInsets.only(bottom: 10, top:2),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 6.0),
                     child: TextField(
+                      maxLines: null,
                       controller: _messageController,
                       decoration: const InputDecoration(
                         hintText: 'Digite sua mensagem...',
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
                       ),
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: () {
-                    // Lógica para enviar a mensagem aqui
-                    String messageText = _messageController.text.trim();
-                    if (messageText.isNotEmpty) {
-                      var data = jsonEncode({
-                        "user_id": user.id,
-                        "message": messageText,
-                        "user_token": user_token
-                      });
 
-                      channel.sink.add(data);
-
-                      // Enviar a mensagem para o servidor WebSocket
-                      // channel.sink.add(messageText);
-                      // Limpar o campo de texto
-                      _messageController.clear();
-                    }
-                  },
-                ),
+                 ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 50),
+                      child: Align(
+                        alignment: AlignmentDirectional.bottomCenter,
+                        child: IconButton(
+                            // color: Colors.blue,
+                            iconSize: 30,
+                            icon: const Icon(Icons.send),
+                            onPressed: () {
+                              // Lógica para enviar a mensagem aqui
+                              String messageText = _messageController.text.trim();
+                              if (messageText.isNotEmpty) {
+                                var data = jsonEncode({
+                                  "user_id": user.id,
+                                  "message": messageText,
+                                  "user_token": user_token
+                                });
+                          
+                                channel.sink.add(data);
+                          
+                                // Enviar a mensagem para o servidor WebSocket
+                                // channel.sink.add(messageText);
+                                // Limpar o campo de texto
+                                _messageController.clear();
+                              }
+                            },
+                          ),
+                      ),
+                      ),
+                
               ],
             ),
+            
           ),
         ],
       ),
@@ -161,12 +182,7 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  @override
-  void dispose() {
-    channel.sink.close();
-    _scrollController.dispose();
-    super.dispose();
-  }
+  
 }
 
 class MessageBubble extends StatelessWidget {
