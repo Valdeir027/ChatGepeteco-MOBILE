@@ -1,9 +1,7 @@
 # Chat Gepeteco
-A new Flutter project. 
-    - Chat Gepeteco
+    Projeto de um aplicativo movel para o sistema web do Chat Gepeteco
 
     
-# Versões anteriores
 ### Version 3.0.4
 - Alerta caso não seja possivel logar ou registrar um user 
 - Personalização do layout do campo de texto na tela de chat 
