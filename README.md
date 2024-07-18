@@ -1,5 +1,5 @@
 # Chat Gepeteco
-    Projeto de um aplicativo movel para o sistema web do Chat Gepeteco
+Projeto de um aplicativo movel para o sistema web do Chat Gepeteco
 
     
 ### Version 3.0.4
