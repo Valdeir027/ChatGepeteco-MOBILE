@@ -1,4 +1,5 @@
 
+import 'package:chatgepeteco/src/componets/room.dart';
 import 'package:chatgepeteco/src/constants.dart';
 import 'package:chatgepeteco/src/controlers/themecontrol.dart';
 import 'package:chatgepeteco/src/pages/chat_page.dart';
@@ -120,103 +121,76 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      body: AnimatedBuilder(
-        animation: Listenable.merge([
-          roomState.isLoading,
-          roomState.error,
-          roomState.state,
-        ]),
-        builder: (context, child) {
-          if (roomState.isLoading.value) {
-            return const Center(
-                child: CircularProgressIndicator(
-              color: Color.fromARGB(255, 48, 32, 27),
-            ));
-          }
-          if (roomState.state.value.isEmpty) {
-            return const Center(
-              child: Text(
-                "Nenhum item encontrado",
-                style: TextStyle(
-                  color: Colors.black54,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 20,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            );
-          } else {
-            return RefreshIndicator(
-              onRefresh: _refreshRoom,
-              child: ListView.separated(
-                separatorBuilder: (context, child) => const SizedBox(
-                  height: 32,
-                ),
-                padding: const EdgeInsets.only(
-                  bottom: 80,
-                  left: 16,
-                  right: 16,
-              
-                ),
-                itemCount: roomState.state.value.length,
-                itemBuilder: (_, index) {
-                  final item = roomState.state.value[index];
-                  var title = item.nome ?? '';
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ChatPage(
-                                  room: item,
-                                )),
+      body: Expanded(
+        child: Container(
+          child: AnimatedBuilder(
+            animation: Listenable.merge([
+              roomState.isLoading,
+              roomState.error,
+              roomState.state,
+            ]),
+            builder: (context, child) {
+              if (roomState.isLoading.value) {
+                return const Center(
+                    child: CircularProgressIndicator(
+                  color: Color.fromARGB(255, 48, 32, 27),
+                ));
+              }
+              if (roomState.state.value.isEmpty) {
+                return const Center(
+                  child: Text(
+                    "Nenhum item encontrado",
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 20,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              } else {
+                return RefreshIndicator(
+                  onRefresh: _refreshRoom,
+                  child: ListView.separated(
+                    separatorBuilder: (context, child) => const SizedBox(
+                      height: 32,
+                    ),
+                    padding: const EdgeInsets.only(
+                      bottom: 80,
+                      left: 16,
+                      right: 16,
+                  
+                    ),
+                    itemCount: roomState.state.value.length,
+                    itemBuilder: (_, index) {
+                      final item = roomState.state.value[index];
+                      return GestureDetector(
+                        onLongPressStart: (details) {
+                          _showMenu(context, details.globalPosition,item, roomState);
+                        },
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ChatPage(
+                                      room: item,
+                                    )),
+                          );
+                        },
+                        child: Expanded(
+                          child: Container(
+                            
+                            padding: EdgeInsets.only(top: 20),
+                            child: RoomComponet(room: item)),
+                        ),
                       );
                     },
-                    child: Card(
-                      elevation: 4.0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Row(
-                              children: [
-                                 Expanded(
-                                   child: Text(
-                                      title,
-                                      softWrap: true,
-                                      style: const TextStyle(
-                                          fontSize: 16.0, fontWeight: FontWeight.bold),
-                                    ),
-                                 ),
-                                 IconButton(icon: const Icon(Icons.edit), onPressed: (){
-                                  _showUpdateRoomDialog(context, item, roomState);
-                                 },)
-                              ],
-                            ),
-                            const SizedBox(height: 8.0), 
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: IconButton(icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                  _showDeleteRoomDialog(context, item, roomState);
-                              }
-                              )
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            );
-          }
-        },
+                  ),
+                );
+              }
+            },
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
@@ -226,7 +200,50 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  Future<void> _showMenu(BuildContext context, Offset position, Room item, RoomState state) async {
+    final result = await showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, 0.0),
+      items: [
+        const PopupMenuItem<String>(
+          value: 'Editar',
+          child: Row(
+            children: [
+              Expanded(child: Text("Editar")),
+              Icon(Icons.edit)
+            ],
+          )
+        ),
+        const PopupMenuItem<String>(
+          value: 'Excluir',
+          child: Row(
+            children: [
+              Expanded(child: Text("Excluir")),
+              Icon(Icons.delete)
+            ],
+          )
+        ),
+      ],
+      elevation: 8.0,
+    );
+
+    if (result != null) {
+      if (result == "Editar") {
+        _showUpdateRoomDialog(context, item, state);
+      }
+      if (result == "Excluir") {
+        _showDeleteRoomDialog(context, item, state);
+      }
+    }
+  }
+
 }
+
+
+
+
+
 
 Future<void> _showDeleteRoomDialog(BuildContext context, Room room,  RoomState state) async {
   
